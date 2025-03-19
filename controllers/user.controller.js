@@ -1,6 +1,52 @@
+import { UserModel } from "../models/user.models.js";
+import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
+  const { firstname, lastname, username, email, password, gender } = req.body;
+
+  const mustFields = {
+    firstname,
+    lastname,
+    username,
+    email,
+    password,
+    gender,
+  };
+
+  // const { avatar, cover } = req.files;
+
+  // const mustFiles = {
+  //   avatar,
+  //   cover,
+  // };
+
+  // console.log(mustFields.some((field) => field?.trim() == "" || !field));
+  for (const [key, value] of Object.entries(mustFields)) {
+    // console.log(`${key}:${value}`);
+    if (!value?.trim()) {
+      throw new ApiError(400, `${key} is required.`);
+    }
+  }
+
+  const exist = await UserModel.findOne({
+    $or: [{ email }, { username }],
+  });
+
+  if (exist) {
+    throw new ApiError(409, `User already exist.`);
+  }
+
+  console.log(req.file);
+  // for (const [key, value] of Object.entries(req.files)) {
+  //   console.log(`${key}:${value}`);
+  // }
+  
+  
+  // avatarPath = req.files?.avatar[0]?.path;
+  // coverPath = req.files?.cover[0]?.path;
+
+
   return res.status(200).json({
     message: "User registered",
   });
